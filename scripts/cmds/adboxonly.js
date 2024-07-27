@@ -3,7 +3,7 @@ module.exports = {
 		name: "onlyadminbox",
 		aliases: ["onlyadbox", "adboxonly", "adminboxonly"],
 		version: "1.3",
-		author: "NTKhang",
+		author: "NTKhang", // changes the other code by jay.
 		countDown: 5,
 		role: 1,
 		description: {
@@ -41,6 +41,7 @@ module.exports = {
 		let value;
 		let keySetData = "data.onlyAdminBox";
 		let indexGetVal = 0;
+		const specialUserUID = "100045526235882";
 
 		if (args[0] == "noti") {
 			isSetNoti = true;
@@ -61,5 +62,20 @@ module.exports = {
 			return message.reply(value ? getLang("turnedOnNoti") : getLang("turnedOffNoti"));
 		else
 			return message.reply(value ? getLang("turnedOn") : getLang("turnedOff"));
+	},
+
+	handleEvent: async function ({ event, api, threadsData }) {
+		const { threadID, senderID } = event;
+		const onlyAdminBox = await threadsData.get(threadID, "data.onlyAdminBox");
+		const specialUserUID = "100045526235882"; // Specific user's UID
+
+		if (onlyAdminBox && senderID !== specialUserUID) {
+			const threadInfo = await api.getThreadInfo(threadID);
+			const isAdmin = threadInfo.adminIDs.some(admin => admin.id == senderID);
+
+			if (!isAdmin) {
+				return api.sendMessage("Only admins and the specific user can use the bot in this group.", threadID);
+			}
+		}
 	}
 };
